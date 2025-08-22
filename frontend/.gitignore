@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Ignore environment variables
-backend/api.env
+skyviewer/backend/api.env
