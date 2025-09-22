@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "commonjs",
   "scripts": {
-  "build": "npm install && npm run build",
+  "build": "npm run build",
   "start": "node server.js"
 },
   "dependencies": {
