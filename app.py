@@ -226,9 +226,9 @@ class SkyBlockAPI:
                     "inventory": self.decode_inventory(profile_stats.get('inventory', {}).get('inv_contents', {}).get('data', "")),
                     "storage": self.decode_inventory(profile_stats.get('inventory', {}).get('ender_chest_contents', {}).get('data', "")),
                     "wardrobe": self.decode_inventory(profile_stats.get('inventory', {}).get('wardrobe_contents', {}).get('data', "")),
-                    "sacks": [], 
+                    "sacks": self.decode_inventory(profile_stats.get('inventory', {}).get('bag_contents', {}).get('sacks_bag', {}).get('data', "")), 
                     "accessories": self.decode_inventory(profile_stats.get('inventory', {}).get('bag_contents', {}).get('talisman_bag', {}).get('data', "")), # Fixed to talisman_bag
-                    "pets": profile_stats.get('pets', []),
+                    "pets": profile_stats.get('pets_data', {}).get('pets', {}),
                     "museum": {}
                 },
                 "skills": {
