@@ -4,7 +4,9 @@ import base64
 import io
 import math
 import os
+import gzip
 from dotenv import load_dotenv
+import pprint
 
 # Get absolute path to the directory containing this file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -100,23 +102,65 @@ class SkyBlockAPI:
         return self.get_level(xp, levels)
 
     def decode_inventory(self, raw_data):
+        if not raw_data:
+            return []
+            
         try:
+            # Decode Base64 and Unzip
             decoded = base64.b64decode(raw_data)
-            nbt_data = nbtlib.File.from_fileobj(io.BytesIO(decoded))
+            compressed_stream = io.BytesIO(decoded)
+            gzipped_stream = gzip.GzipFile(fileobj=compressed_stream)
+            
+            # Parse NBT
+            nbt_data = nbtlib.File.parse(gzipped_stream)
             items = []
-            for item in nbt_data.get('i', []):
+            
+            inventory_list = nbt_data.get('i', [])
+            
+            for item in inventory_list:
                 if item and 'tag' in item and 'display' in item['tag'] and 'Name' in item['tag']['display']:
+                    # 1. Clean formatting codes from the Name
                     name = str(item['tag']['display']['Name'])
                     clean_name = ""
                     skip = False
                     for char in name:
-                        if skip: skip = False; continue
-                        if char == '§': skip = True
-                        else: clean_name += char
-                    items.append(clean_name)
-                else: items.append(None)
+                        if skip: 
+                            skip = False
+                            continue
+                        if char == '§': 
+                            skip = True
+                        else: 
+                            clean_name += char
+                            
+                    # 2. Get the SkyBlock ID for the textures!
+                    sb_id = "UNKNOWN"
+                    try:
+                        sb_id = str(item['tag']['ExtraAttributes']['id'])
+                    except KeyError:
+                        try:
+                            # Fallback for vanilla blocks
+                            sb_id = str(item.get('id', '')).replace('minecraft:', '').upper()
+                        except:
+                            pass
+                            
+                    # --- DEBUG PRINT ---
+                    print(f"DEBUG INVENTORY: Found {clean_name} (ID: {sb_id})")
+                    # -------------------
+
+                    # 3. Append the dictionary so HTML can use item.name and item.id
+                    items.append({
+                        "name": clean_name,
+                        "id": sb_id
+                    })
+                else: 
+                    items.append(None)
+                    
             return items
-        except: return []
+            
+        except Exception as e:
+            print(f"DEBUG: NBT Parsing failed: {e}")
+            # Ensure it returns a dictionary even on error so HTML doesn't crash
+            return [{"name": f"ERROR: {e}", "id": "UNKNOWN"}]
 
     def get_hypixel_level(self, network_exp):
         return (math.sqrt(2 * network_exp + 30625) / 50) - 2.5
@@ -156,7 +200,13 @@ class SkyBlockAPI:
             active_profile = next((p for p in profiles_res['profiles'] if p.get('selected')), profiles_res['profiles'][0])
             profile_stats = active_profile['members'][uuid]
             
-            # Organize data as per screenshots
+            # --- DEBUG VARIABLES START ---
+            has_inventory_api = 'inventory' in profile_stats
+            has_skills_api = 'player_data' in profile_stats and 'experience' in profile_stats['player_data']
+            has_collection_api = 'collection' in profile_stats
+            # --- DEBUG VARIABLES END ---
+            
+            # Organize data
             data = {
                 "player": {
                     "username": username,
@@ -169,15 +219,15 @@ class SkyBlockAPI:
                         "purse": profile_stats.get('currencies', {}).get('coin_purse', 0),
                         "bank": active_profile.get('banking', {}).get('balance', 0)
                     },
-                    "avg_skill_level": 0, # To be calculated
+                    "avg_skill_level": 0,
                     "fairy_souls": profile_stats.get('fairy_souls', {}).get('total_collected', 0)
                 },
                 "inventories": {
                     "inventory": self.decode_inventory(profile_stats.get('inventory', {}).get('inv_contents', {}).get('data', "")),
                     "storage": self.decode_inventory(profile_stats.get('inventory', {}).get('ender_chest_contents', {}).get('data', "")),
                     "wardrobe": self.decode_inventory(profile_stats.get('inventory', {}).get('wardrobe_contents', {}).get('data', "")),
-                    "sacks": [], # Sacks logic...
-                    "accessories": self.decode_inventory(profile_stats.get('inventory', {}).get('bag_contents', {}).get('potion_bag', {}).get('data', "")),
+                    "sacks": [], 
+                    "accessories": self.decode_inventory(profile_stats.get('inventory', {}).get('bag_contents', {}).get('talisman_bag', {}).get('data', "")), # Fixed to talisman_bag
                     "pets": profile_stats.get('pets', []),
                     "museum": {}
                 },
@@ -231,10 +281,16 @@ class SkyBlockAPI:
                     "essence": profile_stats.get('currencies', {}).get('essence', {}),
                     "kills": profile_stats.get('stats', {}).get('kills', 0),
                     "deaths": profile_stats.get('stats', {}).get('deaths', 0)
+                },
+                "debug": {
+                    "active_profile_id": active_profile.get('profile_id'),
+                    "inventory_api_enabled": has_inventory_api,
+                    "skills_api_enabled": has_skills_api,
+                    "collection_api_enabled": has_collection_api
                 }
             }
             return data
-
+        
         except Exception as e:
             print(f"Error processing profile data: {e}")
             import traceback
@@ -244,5 +300,4 @@ class SkyBlockAPI:
 api = SkyBlockAPI()
 
 if __name__ == '__main__':
-    # When run directly, it will just load resources to check if it works
     print("API module initialized.")
