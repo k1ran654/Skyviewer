@@ -9,7 +9,6 @@
 </head>
 <body class="glass-theme">
     <div class="app-container">
-        <!-- Sidebar -->
         <nav class="sidebar retractable">
             <div class="sidebar-header">
                 <h1 class="logo">SKYVIEWER</h1>
@@ -71,6 +70,15 @@
                         <li onclick="showSection('galatea')">galatea</li>
                     </ul>
                 </div>
+
+                <div class="nav-group">
+                    <div class="group-title" onclick="toggleGroup('misc')">
+                        <i data-lucide="folder"></i> System
+                    </div>
+                    <ul id="misc" class="nav-list">
+                        <li onclick="showSection('debug')">API Debug</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="sidebar-footer">
@@ -79,50 +87,76 @@
             {% endif %}
         </nav>
 
-        <!-- Main Viewport -->
         <main class="viewport">
             {% if player %}
-            <!-- Player Model / Armor Column (Middle) -->
             <div class="player-column" id="player-model-col">
                 <div class="player-model-container">
                     <img src="https://mc-heads.net/body/{{ player.username }}" alt="Player Body" class="player-body">
                     <div class="armor-display">
-                        <!-- Armor slots would go here -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- Data Display Column (Right) -->
             <div class="data-column">
                 <div id="content-display">
-                    <!-- Dynamic content loaded here -->
-                    <div id="inventory" class="data-section">
+                    
+                    <div id="inventory" class="data-section" style="display: block;">
                         <h2>Inventory</h2>
                         <div class="inventory-grid">
                             {% for item in inventories.inventory %}
-                                <div class="inventory-slot" title="{{ item if item else 'Empty' }}">
-                                    {% if item %}<div class="item-icon"></div>{% endif %}
+                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
+                                    {% if item %}
+                                        <span class="item-text-fallback">{{ item['name'] }}</span>
+                                        
+                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
+                                            alt="{{ item['name'] }}" 
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <div id="storage" class="data-section" style="display:none;">
+                    <div id="storage" class="data-section" style="display: none;">
                         <h2>Storage (Ender Chest)</h2>
                         <div class="inventory-grid">
                             {% for item in inventories.storage %}
-                                <div class="inventory-slot" title="{{ item if item else 'Empty' }}">
-                                    {% if item %}<div class="item-icon"></div>{% endif %}
+                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
+                                    {% if item %}
+                                        <span class="item-text-fallback">{{ item['name'] }}</span>
+                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
+                                            alt="{{ item['name'] }}" 
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <div id="skills-main" class="data-section" style="display:none;">
+                    <div id="accessories" class="data-section" style="display: none;">
+                        <h2>Accessory Bag</h2>
+                        <div class="inventory-grid">
+                            {% for item in inventories.accessories %}
+                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
+                                    {% if item %}
+                                        <span class="item-text-fallback">{{ item['name'] }}</span>
+                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
+                                            alt="{{ item['name'] }}" 
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div id="skills-main" class="data-section" style="display: none;">
                         <h2>Skills</h2>
                         <div class="skills-container">
                             {% for name, skill_data in skills.items() %}
-                                {% set level_info = skill_data.level if name == 'combat' else skill_data.level %}
+                                {% set level_info = skill_data.level %}
                                 <div class="skill-row">
                                     <span class="skill-name">{{ name|capitalize }}</span>
                                     <div class="progress-bar-container">
@@ -134,7 +168,7 @@
                         </div>
                     </div>
 
-                    <div id="slayers" class="data-section" style="display:none;">
+                    <div id="slayers" class="data-section" style="display: none;">
                         <h2>Slayers</h2>
                         <div class="stats-grid">
                             {% for name, data in skills.combat.slayers.items() %}
@@ -147,7 +181,7 @@
                         </div>
                     </div>
 
-                    <div id="dungeons" class="data-section" style="display:none;">
+                    <div id="dungeons" class="data-section" style="display: none;">
                         <h2>Dungeons</h2>
                         <div class="stat-card">
                             <h3>Catacombs</h3>
@@ -156,7 +190,7 @@
                         </div>
                     </div>
 
-                    <div id="pets" class="data-section" style="display:none;">
+                    <div id="pets" class="data-section" style="display: none;">
                         <h2>Pets</h2>
                         <div class="stats-grid">
                             {% for pet in inventories.pets %}
@@ -168,7 +202,16 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <!-- Other sections... -->
+
+                    <div id="debug" class="data-section" style="display: none;">
+                        <h2>API Debug Info</h2>
+                        <div class="stat-card">
+                            <p><strong>Profile ID:</strong> {{ debug.active_profile_id }}</p>
+                            <p><strong>Inventory API:</strong> {{ 'Enabled' if debug.inventory_api_enabled else 'DISABLED (Turn on in-game!)' }}</p>
+                            <p><strong>Skills API:</strong> {{ 'Enabled' if debug.skills_api_enabled else 'DISABLED' }}</p>
+                            <p><strong>Collection API:</strong> {{ 'Enabled' if debug.collection_api_enabled else 'DISABLED' }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% else %}
@@ -194,10 +237,10 @@
         }
 
         function showSection(id) {
-            // Hide all sections
+            // Forcefully hide every data section block
             document.querySelectorAll('.data-section').forEach(s => s.style.display = 'none');
             
-            // Show target section
+            // Unhide the targeted container
             const section = document.getElementById(id);
             if (section) {
                 section.style.display = 'block';
@@ -205,14 +248,18 @@
                 console.error("Section not found:", id);
             }
 
-            // Show/Hide player model column based on section
+            // Manage the middle player model visibility contextually
             const pmCol = document.getElementById('player-model-col');
-            const showPM = ['inventory', 'storage', 'wardrobe'].includes(id);
+            const showPM = ['inventory', 'storage', 'wardrobe', 'accessories'].includes(id);
             pmCol.style.display = showPM ? 'flex' : 'none';
         }
 
-        // Initialize: Show inventory by default
-        window.onload = () => showSection('inventory');
+        // Run immediately when layout loads
+        window.onload = () => {
+            if(document.getElementById('inventory')) {
+                showSection('inventory');
+            }
+        };
     </script>
 </body>
 </html>
