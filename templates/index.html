@@ -106,8 +106,6 @@
                             {% for item in inventories.inventory %}
                                 <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
                                     {% if item %}
-                                        <span class="item-text-fallback">{{ item['name'] }}</span>
-                                        
                                         <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
                                             alt="{{ item['name'] }}" 
                                             class="item-texture"
@@ -124,7 +122,22 @@
                             {% for item in inventories.storage %}
                                 <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
                                     {% if item %}
-                                        <span class="item-text-fallback">{{ item['name'] }}</span>
+                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
+                                            alt="{{ item['name'] }}" 
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div id="sacks" class="data-section" style="display: block;">
+                        <h2>Sacks</h2>
+                        <div class="inventory-grid">
+                            {% for item in inventories.sacks %}
+                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty'}}">
+                                    {%if item %}
                                         <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
                                             alt="{{ item['name'] }}" 
                                             class="item-texture"
@@ -141,7 +154,6 @@
                             {% for item in inventories.accessories %}
                                 <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
                                     {% if item %}
-                                        <span class="item-text-fallback">{{ item['name'] }}</span>
                                         <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
                                             alt="{{ item['name'] }}" 
                                             class="item-texture"
@@ -200,6 +212,43 @@
                                 <p class="{{ pet.tier.lower() }}">{{ pet.tier }}</p>
                             </div>
                             {% endfor %}
+                        </div>
+                    </div>
+
+                    <div id="museum" class="data-section" style="display: none;">
+                        <h2>Museum</h2>
+                        
+                        {% if inventories.museum %}
+                        <div class="inventory-grid">
+                            {% for item in inventories.museum %}
+                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
+                                    {% if item %}
+                                        <span class="item-text-fallback">{{ item['name'] }}</span>
+                                        
+                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
+                                            alt="{{ item['name'] }}" 
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="stat-card">
+                            <p>No museum data found or the museum has not been unlocked yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div id="dungeons" class="data-section" style="display: none;">
+                        <h2>Dungeons</h2>
+                        <div class="stat-card">
+                            <h3>Catacombs</h3>
+                            <p>Lvl {{ skills.combat.dungeons.catacombs.level }}</p>
+                            
+                            <p>{{ "{:,}".format(skills.combat.dungeons.catacombs.total_xp|int) }} XP</p>
+                            
+                            <p>Secrets Found: {{ skills.combat.secrets_found }}</p>
                         </div>
                     </div>
 
