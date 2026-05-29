@@ -6,7 +6,6 @@ import math
 import os
 import gzip
 from dotenv import load_dotenv
-import pprint
 
 # Get absolute path to the directory containing this file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
