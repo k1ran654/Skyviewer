@@ -42,8 +42,6 @@
                     </div>
                     <ul id="skills" class="nav-list">
                         <li onclick="showSection('skills-main')">skills</li>
-                        <li onclick="showSection('dungeons')">dungeons</li>
-                        <li onclick="showSection('slayers')">slayers</li>
                     </ul>
                 </div>
 
@@ -171,16 +169,38 @@
                                 {% set level_info = skill_data.level %}
                                 <div class="skill-row">
                                     <span class="skill-name">{{ name|capitalize }}</span>
-                                    <div class="progress-bar-container">
+                                    <div class="progress-bar-container" 
+                                        {% if name == 'mining' %} 
+                                        onclick="toggleHotm()" 
+                                        style="cursor: pointer;" 
+                                        title="Click to view Heart of the Mountain stats"
+                                        {% endif %}>
                                         <div class="progress-bar-fill" style="width: {{ level_info.progress }}%;"></div>
                                     </div>
                                     <span class="skill-level">Lvl {{ level_info.level }}</span>
                                 </div>
+                                {% if name == 'mining' and skill_data.hotm or skill_data.hotm == 0 %}
+                                    <div id="hotm-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                            <span><strong>HotM XP:</strong> {{ "{:,}".format(skill_data.hotm.tier|int) }}</span>
+                                            <span style="color: #2bd59d;"><strong>Mithril:</strong> {{ "{:,}".format(skill_data.hotm.mithril_powder|int) }}</span>
+                                            <span style="color: #d52b90;"><strong>Gemstone:</strong> {{ "{:,}".format(skill_data.hotm.gemstone_powder|int) }}</span>
+                                            <span style="color: #a1e2e8;"><strong>Glacite:</strong> {{ "{:,}".format(skill_data.hotm.glacite_powder|int) }}</span>
+                                        </div>
+                                    </div>
+                                {% elif name == 'mining' and not skill_data.hotm %}
+                                    <div id="hotm-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                                <span><strong>No stats to show!</strong></span>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
 
-                    <div id="slayers" class="data-section" style="display: none;">
+
+
+
+                    <!-- <div id="slayers" class="data-section" style="display: none;">
                         <h2>Slayers</h2>
                         <div class="stats-grid">
                             {% for name, data in skills.combat.slayers.items() %}
@@ -200,7 +220,7 @@
                             <p>Lvl {{ skills.combat.dungeons.catacombs.level }}</p>
                             <p>Secrets Found: {{ skills.combat.secrets_found }}</p>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div id="pets" class="data-section" style="display: none;">
                         <h2>Pets</h2>
@@ -274,7 +294,7 @@
 
     <footer class="app-footer">
         <div class="footer-left">Switch player / profile</div>
-        <div class="footer-right">Issues? <a href="https://github.com">create a ticket</a></div>
+        <div class="footer-right">Issues? <a href="https://github.com/k1ran654/Skyviewer/issues/new">create a ticket</a></div>
     </footer>
 
     <script>
@@ -310,5 +330,6 @@
             }
         };
     </script>
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
