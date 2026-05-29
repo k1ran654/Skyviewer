@@ -41,6 +41,17 @@ function toggleHotm() {
         }
     }
 }
+// Toggle Combat dropdown menu (Dungeons & Slayers)
+function toggleCombat() {
+    const combatMenu = document.getElementById('combat-dropdown');
+    if (combatMenu) {
+        if (combatMenu.style.display === 'none') {
+            combatMenu.style.display = 'block';
+        } else {
+            combatMenu.style.display = 'none';
+        }
+    }
+}
 
 // Run immediately when layout loads
 window.onload = () => {

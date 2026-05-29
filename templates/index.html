@@ -42,6 +42,8 @@
                     </div>
                     <ul id="skills" class="nav-list">
                         <li onclick="showSection('skills-main')">skills</li>
+                        <li onclick="showSection('dungeons')">dungeons</li>
+                        <li onclick="showSection('slayers')">slayers</li>
                     </ul>
                 </div>
 
@@ -130,7 +132,7 @@
                         </div>
                     </div>
 
-                    <div id="sacks" class="data-section" style="display: block;">
+                    <div id="sacks" class="data-section" style="display: none;">
                         <h2>Sacks</h2>
                         <div class="inventory-grid">
                             {% for item in inventories.sacks %}
@@ -166,109 +168,97 @@
                         <h2>Skills</h2>
                         <div class="skills-container">
                             {% for name, skill_data in skills.items() %}
-                                {% set level_info = skill_data.level %}
+                                {% set level_info = skill_data.get('level', {}) %}
                                 <div class="skill-row">
                                     <span class="skill-name">{{ name|capitalize }}</span>
+                                    
                                     <div class="progress-bar-container" 
                                         {% if name == 'mining' %} 
-                                        onclick="toggleHotm()" 
-                                        style="cursor: pointer;" 
-                                        title="Click to view Heart of the Mountain stats"
+                                        onclick="toggleHotm()" style="cursor: pointer;" title="Click to view Heart of the Mountain"
+                                        {% elif name == 'combat' %} 
+                                        onclick="toggleCombat()" style="cursor: pointer;" title="Click to view Dungeons & Slayers"
                                         {% endif %}>
-                                        <div class="progress-bar-fill" style="width: {{ level_info.progress }}%;"></div>
-                                    </div>
-                                    <span class="skill-level">Lvl {{ level_info.level }}</span>
-                                </div>
-                                {% if name == 'mining' and skill_data.hotm or skill_data.hotm == 0 %}
-                                    <div id="hotm-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
-                                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
-                                            <span><strong>HotM XP:</strong> {{ "{:,}".format(skill_data.hotm.tier|int) }}</span>
-                                            <span style="color: #2bd59d;"><strong>Mithril:</strong> {{ "{:,}".format(skill_data.hotm.mithril_powder|int) }}</span>
-                                            <span style="color: #d52b90;"><strong>Gemstone:</strong> {{ "{:,}".format(skill_data.hotm.gemstone_powder|int) }}</span>
-                                            <span style="color: #a1e2e8;"><strong>Glacite:</strong> {{ "{:,}".format(skill_data.hotm.glacite_powder|int) }}</span>
-                                        </div>
-                                    </div>
-                                {% elif name == 'mining' and not skill_data.hotm %}
-                                    <div id="hotm-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
-                                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
-                                                <span><strong>No stats to show!</strong></span>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-
-
-
-
-                    <!-- <div id="slayers" class="data-section" style="display: none;">
-                        <h2>Slayers</h2>
-                        <div class="stats-grid">
-                            {% for name, data in skills.combat.slayers.items() %}
-                            <div class="stat-card">
-                                <h3>{{ name }}</h3>
-                                <p>Lvl {{ data.level }}</p>
-                                <p>{{ "{:,}".format(data.total_xp|int) }} XP</p>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div id="dungeons" class="data-section" style="display: none;">
-                        <h2>Dungeons</h2>
-                        <div class="stat-card">
-                            <h3>Catacombs</h3>
-                            <p>Lvl {{ skills.combat.dungeons.catacombs.level }}</p>
-                            <p>Secrets Found: {{ skills.combat.secrets_found }}</p>
-                        </div>
-                    </div> -->
-
-                    <div id="pets" class="data-section" style="display: none;">
-                        <h2>Pets</h2>
-                        <div class="stats-grid">
-                            {% for pet in inventories.pets %}
-                            <div class="stat-card">
-                                <h3>{{ pet.type|replace('_', ' ')|capitalize }}</h3>
-                                <p>Lvl {{ pet.level if pet.level else '?' }}</p>
-                                <p class="{{ pet.tier.lower() }}">{{ pet.tier }}</p>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div id="museum" class="data-section" style="display: none;">
-                        <h2>Museum</h2>
-                        
-                        {% if inventories.museum %}
-                        <div class="inventory-grid">
-                            {% for item in inventories.museum %}
-                                <div class="inventory-slot" title="{{ item['name'] if item else 'Empty' }}">
-                                    {% if item %}
-                                        <span class="item-text-fallback">{{ item['name'] }}</span>
                                         
-                                        <img src="{{ url_for('static', filename='items/' + item['id']|lower + '.png') }}" 
-                                            alt="{{ item['name'] }}" 
-                                            class="item-texture"
-                                            onerror="this.style.display='none';">
-                                    {% endif %}
+                                        <div class="progress-bar-fill" style="width: {{ level_info.get('progress', 0) }}%;"></div>
+                                    </div>
+                                    
+                                    <span class="skill-level">Lvl {{ level_info.get('level', 0) }}</span>
                                 </div>
+                                
+                                {% if name == 'mining' %}
+                                    <div id="hotm-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
+                                        <h3 style="margin: 0 0 10px 0; font-size: 1.1em; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Heart of the Mountain</h3>
+                                        
+                                        {% if skill_data.get('hotm') %}
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                                <span><strong>HotM XP:</strong> {{ "{:,}".format(skill_data['hotm'].get('tier', 0)|int) }}</span>
+                                                <span style="color: #2bd59d;"><strong>Mithril:</strong> {{ "{:,}".format(skill_data['hotm'].get('mithril_powder', 0)|int) }}</span>
+                                                <span style="color: #d52b90;"><strong>Gemstone:</strong> {{ "{:,}".format(skill_data['hotm'].get('gemstone_powder', 0)|int) }}</span>
+                                                <span style="color: #a1e2e8;"><strong>Glacite:</strong> {{ "{:,}".format(skill_data['hotm'].get('glacite_powder', 0)|int) }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div style="font-size: 0.85em; color: #aaaaaa;">No HotM stats to show!</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if name == 'combat' %}
+                                    <div id="combat-dropdown" style="display: none; margin: 5px 0 15px 0; padding: 15px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;">
+                                        
+                                        {% if skill_data.get('dungeons') %}
+                                            <h3 style="margin: 0 0 10px 0; font-size: 1.1em; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Dungeons</h3>
+                                            
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 20px;">
+                                                {% set cata = skill_data.get('dungeons', {}).get('catacombs', {}) %}
+                                                <span><strong>Catacombs Lvl:</strong> {{ cata.get('level', 0) }}</span>
+                                                <span style="color: #ff5555;"><strong>Cata XP:</strong> {{ "{:,}".format(cata.get('total_xp', 0)|int) }}</span>
+                                                <span style="color: #ffff55;"><strong>Secrets Found:</strong> {{ "{:,}".format(skill_data.get('secrets_found', 0)|int) }}</span>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if skill_data.get('slayers') %}
+                                            <h3 style="margin: 0 0 10px 0; font-size: 1.1em; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Slayers</h3>
+                                            
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                                {% for boss_name, boss_data in skill_data.get('slayers', {}).items() %}
+                                                    <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+                                                        <h4 style="margin: 0 0 5px 0; color: #ff5555;">{{ boss_name }} <span style="color: white; font-size: 0.8em; font-weight: normal;">(Lvl {{ boss_data.get('level_data', {}).get('level', 0) }})</span></h4>
+                                                        
+                                                        <p style="font-size: 0.8em; margin: 2px 0;"><strong>XP:</strong> {{ "{:,}".format(boss_data.get('level_data', {}).get('total_xp', 0)|int) }}</p>
+                                                        
+                                                        {% if boss_data.get('rng_drop') and boss_data.get('rng_drop') != 'None Selected' %}
+                                                            <p style="font-size: 0.8em; color: #d52b90; margin: 2px 0;"><strong>RNG:</strong> {{ boss_data.get('rng_drop') }} ({{ "{:,}".format(boss_data.get('rng_xp', 0)|int) }})</p>
+                                                        {% endif %}
+                                                        
+                                                        <div style="margin-top: 8px; font-size: 0.75em; color: #aaaaaa; display: flex; flex-wrap: wrap; gap: 6px;">
+                                                            <span>T1: {{ "{:,}".format(boss_data.get('kills', {}).get('tier_1', 0)|int) }}</span> |
+                                                            <span>T2: {{ "{:,}".format(boss_data.get('kills', {}).get('tier_2', 0)|int) }}</span> |
+                                                            <span>T3: {{ "{:,}".format(boss_data.get('kills', {}).get('tier_3', 0)|int) }}</span> |
+                                                            <span>T4: {{ "{:,}".format(boss_data.get('kills', {}).get('tier_4', 0)|int) }}</span>
+                                                            {% if boss_data.get('kills', {}).get('tier_5', 0) > 0 %}
+                                                                | <span style="color: #aa00aa;">T5: {{ "{:,}".format(boss_data.get('kills', {}).get('tier_5', 0)|int) }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
                             {% endfor %}
                         </div>
-                        {% else %}
-                        <div class="stat-card">
-                            <p>No museum data found or the museum has not been unlocked yet.</p>
-                        </div>
-                        {% endif %}
                     </div>
-
                     <div id="dungeons" class="data-section" style="display: none;">
                         <h2>Dungeons</h2>
                         <div class="stat-card">
+                            {% set cata = skills.get('combat', {}).get('dungeons', {}).get('catacombs', {}) %}
                             <h3>Catacombs</h3>
-                            <p>Lvl {{ skills.combat.dungeons.catacombs.level }}</p>
+                            <p>Lvl {{ cata.get('level', 0) }}</p>
                             
-                            <p>{{ "{:,}".format(skills.combat.dungeons.catacombs.total_xp|int) }} XP</p>
+                            <p>{{ "{:,}".format(cata.get('total_xp', 0)|int) }} XP</p>
                             
-                            <p>Secrets Found: {{ skills.combat.secrets_found }}</p>
+                            <p>Secrets Found: {{ skills.get('combat', {}).get('secrets_found', 0) }}</p>
                         </div>
                     </div>
 
@@ -297,39 +287,6 @@
         <div class="footer-right">Issues? <a href="https://github.com/k1ran654/Skyviewer/issues/new">create a ticket</a></div>
     </footer>
 
-    <script>
-        lucide.createIcons();
-
-        function toggleGroup(id) {
-            const list = document.getElementById(id);
-            list.classList.toggle('active');
-        }
-
-        function showSection(id) {
-            // Forcefully hide every data section block
-            document.querySelectorAll('.data-section').forEach(s => s.style.display = 'none');
-            
-            // Unhide the targeted container
-            const section = document.getElementById(id);
-            if (section) {
-                section.style.display = 'block';
-            } else {
-                console.error("Section not found:", id);
-            }
-
-            // Manage the middle player model visibility contextually
-            const pmCol = document.getElementById('player-model-col');
-            const showPM = ['inventory', 'storage', 'wardrobe', 'accessories'].includes(id);
-            pmCol.style.display = showPM ? 'flex' : 'none';
-        }
-
-        // Run immediately when layout loads
-        window.onload = () => {
-            if(document.getElementById('inventory')) {
-                showSection('inventory');
-            }
-        };
-    </script>
-<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>

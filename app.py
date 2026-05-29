@@ -233,13 +233,26 @@ class SkyBlockAPI:
                 "skills": {
                     "combat": {
                         "level": self.get_skill_level("COMBAT", profile_stats.get('player_data', {}).get('experience', {}).get('SKILL_COMBAT', 0)),
-                        "slayers": {boss.capitalize(): self.get_slayer_level(boss, d.get('xp', 0)) for boss, d in profile_stats.get('slayer', {}).get('slayer_bosses', {}).items()},
+                            "slayers": {
+                                boss.capitalize(): {
+                                    "level_data": self.get_slayer_level(boss, boss_data.get('xp', 0)),
+                                    "kills": {
+                                        "tier_1": boss_data.get('boss_kills_tier_0', 0),
+                                        "tier_2": boss_data.get('boss_kills_tier_1', 0),
+                                        "tier_3": boss_data.get('boss_kills_tier_2', 0),
+                                        "tier_4": boss_data.get('boss_kills_tier_3', 0),
+                                        "tier_5": boss_data.get('boss_kills_tier_4', 0)
+                                    }
+                                }
+                                for boss, boss_data in profile_stats.get('slayer', {}).get('slayer_bosses', {}).items()
+                            },
+                            
+                        },
                         "dungeons": {
                             "catacombs": self.get_skill_level("CATACOMBS", profile_stats.get('dungeons', {}).get('dungeon_types', {}).get('catacombs', {}).get('experience', 0)),
-                            "floors": profile_stats.get('dungeons', {}).get('dungeon_types', {}).get('catacombs', {}).get('times_completed', {})
-                        },
-                        "secrets_found": player_res.get('player', {}).get('achievements', {}).get('skyblock_treasure_hunter', 0)
-                    },
+                            "floors": profile_stats.get('dungeons', {}).get('dungeon_types', {}).get('catacombs', {}).get('times_completed', {}),
+                            "secrets_found": player_res.get('player', {}).get('achievements', {}).get('skyblock_treasure_hunter', 0)
+                            },
                     "farming": {
                         "level": self.get_skill_level("FARMING", profile_stats.get('player_data', {}).get('experience', {}).get('SKILL_FARMING', 0)),
                         "jacob": {
