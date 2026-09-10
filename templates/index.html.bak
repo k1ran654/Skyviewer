@@ -148,6 +148,24 @@
                         </div>
                     </div>
 
+                    <div id="pets" class="data-section" style="display: none;">
+                        <h2>Pets</h2>
+                        <div class="inventory-grid">
+                            {% for item in inventories.pets %}
+                                <div class="inventory-slot" title="{{ item['name'] of item else 'Empty' }}">
+                                    {%if item %}
+                                        <img src="{{ url_for('static', filename='items/ + item['id']|lower + '.png') }}"
+                                            alt="{{ item['name'] }}"
+                                            class="item-texture"
+                                            onerror="this.style.display='none';">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+
+
                     <div id="accessories" class="data-section" style="display: none;">
                         <h2>Accessory Bag</h2>
                         <div class="inventory-grid">
